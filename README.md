@@ -59,17 +59,20 @@ All dataset and model configurations are set in settings.json
 settings.json is a json object with two nested objects "models" and "datasets"
 
 The format for defining a dataset is
-    "DatasetName": { "input_data": ["Names", "Of", "Input", "Datasets"]
-                     "transforms": [["transform_name1", {"args": "values"}],
-                                   ["transform_name1", {"args": "values"}]] }
-
+```
+"DatasetName": { "input_data": ["Names", "Of", "Input", "Datasets"]
+                 "transforms": [["transform_name1", {"args": "values"}],
+                                ["transform_name1", {"args": "values"}]] 
+               }
+```
 The format for defining a model is
-    "ModelName": { "model": "PythonNameForModelObject", 
-                   "dataset": "NameOfDatasetUsedByModel",
-                   "target": "NameOFDatasetForTargetVariables",
-                   "args": {"NameOfArgument": "ValueOfArgument", ...},
-                   "validator": { "name": "NameOfCrossValidaton",
-                                  "args": "ArgsForCrossValidation" }
-                 }
-                 
+```
+"ModelName": { "model": "PythonNameForModelObject", 
+               "dataset": "NameOfDatasetUsedByModel",
+               "target": "NameOFDatasetForTargetVariables",
+               "args": {"NameOfArgument": "ValueOfArgument", ...},
+               "validator": { "name": "NameOfCrossValidaton",
+                              "args": "ArgsForCrossValidation" }
+             }
+```                 
 Then these datasets and models can be used within python as shown above
