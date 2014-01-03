@@ -20,13 +20,13 @@ Running the winning model
 This will create all datasets required for the model, train the model, and save
 the predictions. The final model and intermediate datasets will be saved to cache.
 
-By default the predictions will be saved to submissions/ridge39.csv
+By default the predictions will be saved to submissions/ridge_39.csv
 In general predictions are saved using the format $SUBMITDIR/$MODELNAME.csv
 
 To change the default location for predictions and cache modify the global variables
 in config.py
 
-I currently do not have any cache management implemented, so state cache files
+I currently do not have any cache management implemented, so stale cache files
 are not removed. If you would like to try running a model with any other dataset
 configurations you will need to manually flush the cache by removing all relevent
 cache files in cache/. A safe bet is to delete everything in cache if you're unsure
