@@ -1,7 +1,7 @@
 
-<OWNER> = Miroslaw Horbal
-<ORGANIZATION> = University of Waterloo
-<YEAR> = 2013
+Miroslaw Horbal
+University of Waterloo
+2013
 
 In the original BSD license, both occurrences of the phrase "COPYRIGHT HOLDERS AND CONTRIBUTORS" in the disclaimer read "REGENTS AND CONTRIBUTORS".
 
