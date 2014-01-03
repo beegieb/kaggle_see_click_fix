@@ -49,8 +49,13 @@
             "input_data": ["TrainIDS"],
             "transforms": [["reduce_data", { "keep_n": 67126 }]]
         },
+        
+        "Categories": {
+            "input_data": ["Cleanedup3"],
+            "transforms": [["create_city_and_api_groups", {}]]
+        },
                 
-        "Cleanedup3": { 
+        "Cleanedup4": { 
             "input_data": ["Train", "Test"],
             "transforms": [ 
                 ["concat_df", { 
@@ -107,7 +112,7 @@
             ]
         },
         
-        "Cleanedup4": { 
+        "Cleanedup3": { 
             "input_data": ["Train", "Test"],
             "transforms": [ 
                 ["concat_df", { 

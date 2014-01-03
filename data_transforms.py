@@ -456,13 +456,14 @@ def group_data(data, cols, degree=3):
         new_data.append(group_ids)
     data['_'.join(cols)] = np.array(new_data).flatten()
     return data
+
+def create_city_and_api_groups(data):
+    groups = []
+    for idx in data.index:
+        s = data.city[idx]
+        if data.source[idx] == 'remote_api_created':
+            s = s + ' RAC'
+        groups.append(s)
+    return groups
     
-#~ def group_data(data, degree=3):
-    #~ new_data = []
-    #~ m,n = data.shape
-    #~ for indices in combinations(range(n), degree):
-        #~ group_ids = data.groupby( \
-        #~ list(data.columns[list(indices)])) \
-        #~ .grouper.group_info[0]
-        #~ new_data.append(group_ids)
-    #~ return np.array(new_data).T
+        

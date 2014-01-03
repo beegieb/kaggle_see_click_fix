@@ -15,7 +15,7 @@ Running the winning model
     unzip -d data data/bryans_data.zip
     mkdir cache, submissions
 
-    python test.py ridge39
+    python test.py ridge_39
 
 This will create all datasets required for the model, train the model, and save
 the predictions. The final model and intermediate datasets will be saved to cache.
@@ -25,6 +25,12 @@ In general predictions are saved using the format $SUBMITDIR/$MODELNAME.csv
 
 To change the default location for predictions and cache modify the global variables
 in config.py
+
+I currently do not have any cache management implemented, so state cache files
+are not removed. If you would like to try running a model with any other dataset
+configurations you will need to manually flush the cache by removing all relevent
+cache files in cache/. A safe bet is to delete everything in cache if you're unsure
+what is getting modified. 
 
 A note on the winning model: 
 It was recently discovered that when I started using Bryan's dataset to explore
@@ -55,7 +61,7 @@ settings.json is a json object with two nested objects "models" and "datasets"
 The format for defining a dataset is
     "DatasetName": { "input_data": ["Names", "Of", "Input", "Datasets"]
                      "transforms": [["transform_name1", {"args": "values"}],
-                                    ["transform_name1", {"args": "values"}]] }
+                                   ["transform_name1", {"args": "values"}]] }
 
 The format for defining a model is
     "ModelName": { "model": "PythonNameForModelObject", 
