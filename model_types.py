@@ -13,6 +13,18 @@ def apply_bound(pred, bounds=(0,1,0)):
     return pred
     
 class RidgeRMSLE(object):
+    """
+    A wrapper for sklearn's Ridge model that is used for regression against
+    the RMSLE metric. This means that prior to training the Ridge, all values
+    in the target variables are passed through a log(y + 1) transform. Also, all
+    predictions from the Ridge are transformed with exp(pred) - 1. 
+     
+    I've also added a bounding value that can be used to ensure that all 
+    predictions are bounded below by the defined bound. 
+    
+    The API for training, predicting, and scoring this model is similar to
+    that used by sklearn's Ridge model. 
+    """
     def __init__(self, alpha=1.0, bound=(0,0,0)):
         self._ridge = linear_model.Ridge()
         self.alpha = alpha

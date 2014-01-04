@@ -28,6 +28,20 @@ SETTINGS = 'settings.json'
 import json
 
 def json_configs(type, name):
+    """
+    Base method that extracts the configuration info from the json file defined
+    in SETTINGS
+    
+    Args:
+        type - the name of the type of configuration object to look in
+        name - the name of the object whose configs will be extracted
+    
+    Returns:
+        a dict containing the settings for the object of type and name
+    
+    Raises:
+        a value error if type or name are not defined in the SETTINGS json file
+    """
     f = open(SETTINGS)
     configs = json.load(f)[type]
     f.close()
@@ -38,7 +52,13 @@ def json_configs(type, name):
     return configs[name]
     
 def model_configs(name):
+    """
+    Wrapper for json_configs where type is 'models'
+    """
     return json_configs('models', name)
     
 def dataset_configs(name):
+    """
+    Wrapper for json_configs where type is 'datasets'
+    """
     return json_configs('datasets', name)

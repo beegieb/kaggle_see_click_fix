@@ -54,63 +54,6 @@
             "input_data": ["Cleanedup3"],
             "transforms": [["create_city_and_api_groups", {}]]
         },
-                
-        "Cleanedup4": { 
-            "input_data": ["Train", "Test"],
-            "transforms": [ 
-                ["concat_df", { 
-                    "ignore_index": true 
-                }],
-                ["fillna", { 
-                    "cols": ["description", "source", "tag_type"],
-                    "fill_val": "__missing__" 
-                }],
-                ["col2datetime", { 
-                    "col": "created_time",
-                    "datestr": "%Y-%m-%d %H:%M:%S" 
-                }],
-                ["is_weekend", { }],
-                ["time_of_day", { }],
-                ["city_neighborhood", { }],
-                ["description_length", { }],
-                ["group_data", { 
-                    "cols": ["city", "source"],
-                    "degree": 2 
-                }],
-                ["group_data", { 
-                    "cols": ["city", "tag_type"],
-                    "degree": 2 
-                }],
-                ["group_data", {
-                    "cols": ["source", "tag_type"],
-                    "degree": 2 
-                }],
-                ["group_data", {
-                    "cols": ["city", "source", "tag_type"],
-                    "degree": 3 
-                }],
-                ["group_data", { 
-                    "cols": ["city", "time_of_day"],
-                    "degree": 2 
-                }],
-                ["group_data", { 
-                    "cols": ["zipcode", "source"],
-                    "degree": 2 
-                }],
-                ["knn_threshold", { 
-                    "column": "zipcode",
-                    "threshold": 24 
-                }],
-                ["knn_threshold", { 
-                    "column": "city_neighborhood",
-                    "threshold": 15 
-                }],
-                ["knn_threshold", { 
-                    "column": "zipcode_source",
-                    "threshold": 24
-                }]
-            ]
-        },
         
         "Cleanedup3": { 
             "input_data": ["Train", "Test"],

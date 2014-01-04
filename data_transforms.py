@@ -192,7 +192,7 @@ def group_rares(data, cutoff=3):
             new_data.append(pt)
     return np.array(new_data)
     
-def get_train(*args, **kwargs):
+def get_train(data):
     """return a dataframe containing training data"""
     data = pd.read_csv(config.TRAINFILE)
     geodata = pd.read_csv(config.GEODATA)
@@ -210,7 +210,7 @@ def get_train(*args, **kwargs):
         data[col] = np.array(geodata[col][:n_train])
     return data
     
-def get_test(*args, **kwargs):
+def get_test(data):
     """return a dataframe containing test data"""
     data = pd.read_csv(config.TESTFILE)
     geodata = pd.read_csv(config.GEODATA)
@@ -229,7 +229,7 @@ def get_test(*args, **kwargs):
         data[col] = np.array(geodata[col][n_geo-n_test:])
     return data
     
-def get_targets(*args, **kwargs):
+def get_targets(data):
     """return an array containing train labels with a log(y + 1) transform"""
     data = pd.read_csv(config.TRAINFILE)
     y = data[labels]
@@ -272,7 +272,8 @@ def columnOHE(data, column, **args):
     
 def hstack(datasets):
     """
-    Wrapper for hstack method from numpy or scipy
+    Wrapper for hstack method from numpy or scipy. If any of the input
+    datasets are sparse, then sparse.hstack is used instead of np.hstack
     
     Args:
         datasets: datasets to be stacked, all must have same shape along axis 0
@@ -292,7 +293,7 @@ def drop_disjoint(train, test):
     Removes all features from train and test that are strictly all 0 in either the train
     set or test set
     
-    train, and test are assumed to be scipy.sparse CSR matricies 
+    train, and test are scipy.sparse CSR matricies 
     """
     in_training = find(train.sum(0).A.flatten() != 0)
     train = train[:, in_training]
@@ -303,9 +304,36 @@ def drop_disjoint(train, test):
     return sparse.vstack((train, test)).tocsr()
     
 def reduce_data(data, keep_n):
+    """
+    Return only the final keep_n elements of the data
+    
+    Args:
+        data - an iterable that supports indexing
+        keep_n - an integer for the number of elements to keep
+    
+    Returns:
+        data[-keep_n:]
+    """
     return data[-keep_n:]
     
 def sparse_reduce_and_filter(data, keep_n_train=None):
+    """
+    A wrapper function that calls reduce_data on training data and then
+    drop_disjoint on the training and test data
+    
+    Args:
+        data - a 2-tuple or iterable of length 2 
+               data[0] is a sparse matrix contains training data followed by test data
+               data[1] is an array containing the training lables for the test data
+        keep_n_train - None or int
+                       if None, all training data is returned
+                       if int, only the last keep_n_train data points are returned
+    
+    Returns:
+        A scipy sparse matrix containing keep_n_train points from the train set
+        followed by the entire test set. This matrix is filered with the
+        drop_disjoint function
+    """
     data, targets = data
     n_train = targets.shape[0]
     data_test = data[n_train:]
@@ -316,12 +344,47 @@ def sparse_reduce_and_filter(data, keep_n_train=None):
     return drop_disjoint(data_train, data_test)
 
 def get_df_cols(data, cols):
+    """
+    A wrapper that extracts cols from a pandas dataframe
+    
+    Args:
+        data - a pandas DataFrame
+        cols - a list of column names that will be extracted from data
+    
+    Returns:
+        data[cols]
+    """
     return data[cols]
 
 def concat_df(df_list, ignore_index=False):
+    """
+    A wrapper for pandas concat function
+    
+    Args:
+        df_list - a list of pandas DataFrames
+        ignore_index - a boolean 
+                       controls if the original row-index of the dataframes is
+                       perserved 
+    
+    Returns:
+        A concatenated DataFrame created from df_list
+    """
     return pd.concat(df_list, ignore_index=ignore_index)
 
 def fillna(df, cols=None, fill_val='__missing__'):
+    """
+    A wrapper for pandas fillna function
+    
+    Args:
+        df - a pandas DataFrame
+        cols - None or list of column names
+               if None, fillna is called on the entire DataFrame
+               if a list of columns, fillna is called only on those columns
+        fill_val - a value used to fill in any NA elements
+    
+    Returns:
+        a DataFrame with NA values replaced with fill_val
+    """
     if cols is None:
         df = df.fillna(fill_val)
     else:
@@ -329,12 +392,39 @@ def fillna(df, cols=None, fill_val='__missing__'):
     return df
 
 def col2datetime(df, col, datestr='%m/%d/%Y %H:%M'):
+    """
+    Converts date strings in a DataFrame to datetime objects
+    
+    Args:
+        df - a pandas DataFrame
+        col - the column name in df that contains the date strings
+        datestr - a string that encodes the formatting of the datetime strings
+                  see python's documentation for datetime to see how these
+                  strings are formatted
+    
+    Returns:
+        The DataFrame with all date strings in df[col] converted to datetime objects
+    """
     for idx in df.index:
         d = df[col][idx]
         df[col][idx] = datetime.strptime(d, datestr)
     return df
 
 def replace_col_val(data, column, repcol, val):
+    """
+    Replaces any values val in a DataFrame column with the value from column repcol
+    Currently both columns are converted to strings ... not really wise
+    
+    Args:
+        data - a pandas DataFrame
+        column - the name of the column where values will be replaced
+        repcol - the name of the column where replacement values are taken from
+        val - a string that is used to match against the column
+    
+    Returns:
+        a DataFrame with the condition:
+            if data[column][i] == val then data[column][i] = data[repcol][i]
+    """
     new_col = []
     data[column] = data[column].astype('S100')
     data[repcol] = data[repcol].astype('S100')
@@ -346,7 +436,7 @@ def knn_threshold(data, column, threshold=15, k=3):
     Cluster rare samples in data[column] with frequency less than 
     threshold with one of k-nearest clusters 
     
-    parameters:
+    Args:
         data - pandas.DataFrame containing colums: latitude, longitude, column
         column - the name of the column to threshold
         threshold - the minimum sample frequency
@@ -386,6 +476,17 @@ def knn_threshold(data, column, threshold=15, k=3):
     return data
     
 def is_weekend(data):
+    """
+    Adds a binary is_weekend column to a pandas DataFrame 
+    
+    Args:
+        data - a pandas DataFrame containing a 'created_time' column of
+               datetime objects
+    Returns:
+        A DataFrame with an additional 'is_weekend' column
+        if data['created_time'][i] is Friday, Saturday or Sunday then
+        data['is_weekend'][i] = 1
+    """
     data['is_weekend'] = 0
     weekend_days = {4, 5, 6}
     for idx in data.index:
@@ -395,6 +496,18 @@ def is_weekend(data):
     return data
 
 def time_of_day(data):
+    """
+    Adds a time_of_day column to a pandas DataFrame
+    
+    Args:
+        data - a pandas DataFrame containing a 'created_time' column of 
+               datetime objects
+    
+    Returns:
+        A DataFrame with an additional 'time_of_day' column
+        time_of_day is based on the hour and the day is broken up into 6 4h segments
+        each segment is given it's own integer class 0-5
+    """
     data['time_of_day'] = 0
     for idx in data.index:
         h = data.created_time[idx].hour
@@ -413,6 +526,18 @@ def time_of_day(data):
     return data
 
 def city_neighborhood(data):
+    """
+    A helper method that concatenates the city name with neighborhood name
+    This is used as an insurance policy to distinguish two cities that may 
+    share the same neighborhood name
+    
+    Args:
+        data - a pandas DataFrame with city and neighborhood columns
+    
+    Returns:
+        a DataFrame with a new column 'city_neighborhood' that contains the
+        concatenated string data.city[i] + ' ' + data.neighborhood[i]
+    """
     data['city_neighborhood'] = ''
     for idx in data.index:
         c = data.city[idx]
@@ -421,6 +546,20 @@ def city_neighborhood(data):
     return data
 
 def rare_category_replacement(data, column, replace_col, cutoff=3):
+    """
+    Replace any categorical values that occur less than cutoff times 
+    in data[column] with data[replace_col]
+    
+    Args:
+        data - a pandas DataFrame
+        column - the name of the column that is being thresholded
+        replace_col - the name of the column that is used for replacement values
+        cutoff - the cutoff threshold for replacement
+    
+    Returns:
+        a DataFrame that has any values in data[column] that occur less than
+        cutoff time replaced with data[replace_col]
+    """
     counts = {}
     data[column] = data[column].astype('S100')
     data[replace_col] = data[replace_col].astype('S100')
@@ -433,6 +572,19 @@ def rare_category_replacement(data, column, replace_col, cutoff=3):
     return data
     
 def description_length(data, log_transform=True):
+    """
+    Create a new feature description_length based on the number of words in
+    the issue description. Any issues with description '__missing__' are assumed
+    to have length 0
+    
+    Args:
+        data - A pandas DataFrame containing a column named 'description'
+        log_transform - boolean
+                        if True data[description_length] = log(# of words + 1)
+                        if False data[description_length] = # of words 
+    Returns:
+        a DataFrame with an addition column 'description_length' 
+    """
     data['description_length'] = 0
     for idx in data.index:
         d = data.description[idx]
@@ -447,6 +599,23 @@ def description_length(data, log_transform=True):
     return data
 
 def group_data(data, cols, degree=3):
+    """
+    Create higher-order combinations of categorial features
+    
+    Args:
+        data - a pandas DataFrame
+        cols - a list of column names that will be used for creating higher-order
+               groupings
+        degree - an integer identifying the order of the combinations
+    
+    Returns:
+        a DataFrame with additional colums for each of the higher-order column
+        combination. The names of the new columns are concatenated strings
+        of the column names used in the combination separated by an '_'
+        
+        Eg: 2nd degree combinations of data['col1'] and data['col2'] are located
+            in data['col1_col2']
+    """
     new_data = []
     m,n = data[cols].shape
     for indices in combinations(range(n), degree):
@@ -458,6 +627,17 @@ def group_data(data, cols, degree=3):
     return data
 
 def create_city_and_api_groups(data):
+    """
+    Creates a list of groups based on city name and issue source used in scaling
+    the final predictions. 
+    
+    Args: 
+        data - a pandas dataframe that contains city and source columns
+    
+    Returns:
+        a list of strings, each string contains the city name along with a '_RAC'
+        suffix if the issue source is 'remote_api_created'
+    """
     groups = []
     for idx in data.index:
         s = data.city[idx]

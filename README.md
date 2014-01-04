@@ -6,6 +6,7 @@ linux distribution
 Installation
 ------------
     sudo apt-get install python-scipy ipython python-sklearn python-pandas
+    git clone git@github.com:beegieb/kaggle_see_click_fix.git
 
 Running the winning model
 -------------------------
